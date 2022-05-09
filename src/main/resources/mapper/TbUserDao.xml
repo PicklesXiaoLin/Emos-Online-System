@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.emos.wx.db.dao.TbUserDao">
+
+  <select id="haveRootUser" resultType="boolean">
+    SELECT IF(COUNT(*),TRUE,FALSE) FROM tb_user WHERE root = 1;
+  </select>
+
+  <select id="searchUserPermissions" parameterType="int" resultType="String">
+    SELECT DISTINCT p.permission_name
+    FROM tb_user u
+    JOIN tb_role r ON JSON_CONTAINS(u.role, CAST(r.id AS CHAR))
+    JOIN tb_permission p ON JSON_CONTAINS(r.permissions, CAST(p.id AS CHAR))
+    WHERE u.id=#{userId} AND u.status = 1;
+  </select>
+
+  <insert id="insert" parameterType="HashMap">
+    insert into tb_user
+    set
+    <if test="openId!=null">
+      open_id = #{openId} ,
+    </if>
+    <if test="nickname!=null">
+      nickname = #{nickname} ,
+    </if>
+    <if test="photo!=null">
+      photo = #{photo} ,
+    </if>
+    <if test="name!=null">
+      name = #{name} ,
+    </if>
+    <if test="sex!=null">
+      sex = #{sex} ,
+    </if>
+    <if test="tel!=null">
+      tel = #{tel} ,
+    </if>
+    <if test="email!=null">
+      enail = #{email} ,
+    </if>
+    <if test="hiredate!=null">
+      hiredate = #{hiredate} ,
+    </if>
+    role = #{role} ,
+    root = #{root} ,
+    <if test="deptName!=null">
+      dept_id = ( select id from tb_dept where dept_name = #{deptName} ) ,
+    </if>
+    status = #{status} ,
+    create_time = #{createTime}
+  </insert>
+
+  <select id="searchIdByOpenId" parameterType="string" resultType="integer">
+        select id from tb_user where open_id = #{openId} and status = 1
+   </select>
+
+  <select id="searchById" parameterType="int" resultType="com.example.emos.wx.db.pojo.TbUser">
+    SELECT
+        id, open_id, nickname, photo, name, sex, tel, role, root, dept_id, status, create_time
+    FROM tb_user WHERE id=#{userId} AND status =1
+  </select>
+
+  <select id="searchNameAndDept" parameterType="int" resultType="HashMap">
+        SELECT u.name, d.dept_name
+        FROM tb_user u LEFT JOIN tb_dept d ON u.dept_id=d.id
+        WHERE u.id = #{userId} AND u.status = 1
+  </select>
+
+  <select id="searchUserHiredate" parameterType="int" resultType="string">
+        select hiredate
+        from tb_user
+        where id = #{userId} and status = 1
+  </select>
+
+
+
+
+</mapper>
